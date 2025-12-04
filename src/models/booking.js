@@ -8,7 +8,7 @@ export default (sequelize, DataTypes) => {
         primaryKey: true,
       },
 
-      bookingId: {
+      booking_id: {
         type: DataTypes.STRING,
         allowNull: false,
         unique: true,

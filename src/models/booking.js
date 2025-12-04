@@ -8,12 +8,12 @@ export default (sequelize, DataTypes) => {
         primaryKey: true,
       },
 
-    bookingId: {
-  type: DataTypes.STRING,
-  allowNull: false,
-  unique: true,
-  field: "booking_id"
-},
+   bookingId: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        unique: true,
+      },
+
 
 
       // Foreign keys

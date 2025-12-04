@@ -207,6 +207,8 @@ export const registerOwner = async (req, res) => {
       attempts: 0,
     });
 
+        console.log("Generated OTP for", phone, "is", otp); 
+
     // 4️⃣ Respond
     res.status(201).json({
       message: "Owner registered. OTP sent to phone.",

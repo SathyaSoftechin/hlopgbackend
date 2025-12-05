@@ -83,12 +83,23 @@
     } = req.body;
 
 
-     // ✔️ Find minimum price from sharing JSON
-    let minPrice = 0;
-    if (sharing && typeof sharing === "object") {
-      const priceList = Object.values(sharing);
-      minPrice = Math.min(...priceList);
-    }
+    // ✔️ Parse sharing from formData (it arrives as a string)
+let sharingObject = {};
+try {
+  sharingObject = JSON.parse(sharing);
+} catch (e) {
+  sharingObject = {};
+}
+
+// ✔️ Find minimum price safely
+let minPrice = 0;
+if (sharingObject && typeof sharingObject === "object" && Object.keys(sharingObject).length > 0) {
+  const priceList = Object.values(sharingObject).map(Number);
+  minPrice = Math.min(...priceList);
+}
+
+console.log("Calculated Min Price:", minPrice);
+
 
     if (!pgName || !pgInfo || !pgType || !address || !city || !area) {
       return res.status(400).json({ error: "Please fill all required fields" });

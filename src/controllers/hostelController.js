@@ -82,6 +82,14 @@
       foodMenu
     } = req.body;
 
+
+     // ✔️ Find minimum price from sharing JSON
+    let minPrice = 0;
+    if (sharing && typeof sharing === "object") {
+      const priceList = Object.values(sharing);
+      minPrice = Math.min(...priceList);
+    }
+
     if (!pgName || !pgInfo || !pgType || !address || !city || !area) {
       return res.status(400).json({ error: "Please fill all required fields" });
     }
@@ -100,7 +108,7 @@
       sharing: JSON.parse(sharing || "{}"),
       popular: 1,
       rating: 0.0,
-        price: 0 ,
+        price: minPrice ,
       rules: JSON.parse(rules || "[]")
     });
 

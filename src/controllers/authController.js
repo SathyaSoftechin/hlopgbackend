@@ -17,6 +17,62 @@ export const registerUser = async (req, res) => {
     const { name, email, phone, password, gender, user_type } = req.body.formData;
     const hashedPassword = await bcrypt.hash(password, 10);
 
+
+    // 1️⃣ Required fields check
+    if (!name || !email || !phone || !password ) {
+      return res.status(400).json({
+        success: false,
+        message: "All fields are required",
+      });
+    }
+
+    // 1️⃣ Name validation (3–22 chars, alphabets only)
+const nameRegex = /^[A-Za-z ]{3,22}$/;
+if (!nameRegex.test(name)) {
+  return res.status(400).json({
+    success: false,
+    message: "Name must be 3–22 characters and contain only letters",
+  });
+}
+
+    // 2️⃣ Email length check
+if (email.length > 32) {
+  return res.status(400).json({
+    success: false,
+    message: "Email must not exceed 32 characters",
+  });
+}
+
+// Allowed email domains only
+const emailRegex = /^[a-zA-Z0-9._%+-]+@(gmail\.com|yahoo\.com|outlook\.com)$/;
+if (!emailRegex.test(email)) {
+  return res.status(400).json({
+    success: false,
+    message: "Only gmail.com, yahoo.com, outlook.com emails are allowed",
+  });
+}
+
+    // 3️⃣ Indian phone number validation (10 digits)
+    const phoneRegex = /^[6-9]\d{9}$/;
+    if (!phoneRegex.test(phone)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid Indian phone number",
+      });
+    }
+
+    
+    // 4️⃣ Password validation (5–12 chars, upper, lower, number)
+const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{5,12}$/;
+if (!passwordRegex.test(password)) {
+  return res.status(400).json({
+    success: false,
+    message:
+      "Password must be 5–12 characters and include uppercase, lowercase, and a number",
+  });
+}
+
+    
         const usercheck = await Visitor.findOne({
           where: {
             [Op.or]: [{ email }, { phone }],
@@ -153,6 +209,43 @@ export const loginUser = async (req, res) => {
 export const registerOwner = async (req, res) => {
   try {
     const { name, email, phone, password, user_type } = req.body.formData;
+
+
+    // 1️⃣ Required fields check
+    if (!name || !email || !phone || !password  || !user_type) {
+      return res.status(400).json({
+        success: false,
+        message: "All fields are required",
+      });
+    }
+
+    // 2️⃣ Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid email format",
+      });
+    }
+
+    // 3️⃣ Indian phone number validation (10 digits)
+    const phoneRegex = /^[6-9]\d{9}$/;
+    if (!phoneRegex.test(phone)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid Indian phone number",
+      });
+    }
+ 
+
+    // 5️⃣ User type validation
+    const allowedUserTypes = [ "owner"];
+    if (!allowedUserTypes.includes(user_type.toLowerCase())) {
+      return res.status(400).json({
+        success: false,
+        message: "User type must be  owner",
+      });
+    }
     const hashedPassword = await bcrypt.hash(password, 10);
 
 

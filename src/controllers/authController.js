@@ -79,13 +79,15 @@ if (!passwordRegex.test(password)) {
           },
           });
 
+
         if (usercheck) {
           if (usercheck.email === email) {
             return res.status(400).json({ message: "Email already registered" });
           } else if (usercheck.phone === phone) {
             return res.status(400).json({ message: "Phone number already registered" });
           }
-          }
+        }
+        else{
  
         const user = await User.create({
         name,
@@ -146,7 +148,8 @@ if (!passwordRegex.test(password)) {
       user: { id: user.id, name: user.name, email: user.email, phone: user.phone, gender: user.gender, user_type: user.user_type, otp: otp },
     });
 
-  } catch (error) {
+  } 
+} catch (error) {
     console.error("Register Error:", error);
     
     if (error.name === "SequelizeUniqueConstraintError") {

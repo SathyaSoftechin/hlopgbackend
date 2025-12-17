@@ -28,7 +28,7 @@ export const registerUser = async (req, res) => {
     }
 
     // 2️⃣ Name validation
-    const nameRegex = /^[A-Za-z ]{3,22}$/;
+    const nameRegex = /^[A-Za-z0-9 ]{3,22}$/;
     if (!nameRegex.test(name)) {
       return res.status(400).json({
         success: false,

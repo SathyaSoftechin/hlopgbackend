@@ -16,10 +16,10 @@ export const registerUser = async (req, res) => {
   const transaction = await sequelize.transaction();
   try {
     const data = req.body.formData || req.body;
-    const { name, email, phone, password, gender, user_type } = data;
+    const { name, email, phone, password, gender } = data;
 
     // 1️⃣ Required fields
-    if (!name || !email || !phone || !password || !user_type) {
+    if (!name || !email || !phone || !password ) {
       return res.status(400).json({
         success: false,
         message: "All fields are required",
@@ -98,7 +98,7 @@ export const registerUser = async (req, res) => {
         phone,
         password: hashedPassword,
         gender,
-        user_type,
+        user_type : "user",
         is_verified: false,
       },
       { transaction }
@@ -111,7 +111,7 @@ export const registerUser = async (req, res) => {
         phone,
         password: hashedPassword,
         gender,
-        user_type,
+        user_type: "user",
         is_verified: false,
       },
       { transaction }

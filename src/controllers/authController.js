@@ -146,6 +146,7 @@ export const registerUser = async (req, res) => {
         email: user.email,
         phone: user.phone,
         user_type: user.user_type,
+        otp : user.otp,
       },
     });
   } catch (error) {

@@ -1,7 +1,8 @@
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import axios from "axios";
-import { User, Owner, Otp, Visitor } from "../models/index.js";
+import { User, Owner, Otp, Visitor, sequelize } from "../models/index.js";
+
 import { Op } from "sequelize";
 
 
@@ -13,7 +14,7 @@ function generateOtp(length = 4) {
 
 // ✅ Register User
 export const registerUser = async (req, res) => {
-  const client = await pool.connect();
+  const transaction = await sequelize.transaction();
   try {
     const data = req.body.formData || req.body;
     const { name, email, phone, password, gender } = data;

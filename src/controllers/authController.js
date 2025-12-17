@@ -13,46 +13,46 @@ function generateOtp(length = 4) {
 
 // ✅ Register User
 export const registerUser = async (req, res) => {
+  const transaction = await sequelize.transaction();
   try {
-    const { name, email, phone, password, gender, user_type } = req.body.formData;
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const data = req.body.formData || req.body;
+    const { name, email, phone, password, gender, user_type } = data;
 
-
-    // 1️⃣ Required fields check
-    if (!name || !email || !phone || !password ) {
+    // 1️⃣ Required fields
+    if (!name || !email || !phone || !password || !user_type) {
       return res.status(400).json({
         success: false,
         message: "All fields are required",
       });
     }
 
-    // 1️⃣ Name validation (3–22 chars, alphabets only)
-const nameRegex = /^[A-Za-z ]{3,22}$/;
-if (!nameRegex.test(name)) {
-  return res.status(400).json({
-    success: false,
-    message: "Name must be 3–22 characters and contain only letters",
-  });
-}
+    // 2️⃣ Name validation
+    const nameRegex = /^[A-Za-z ]{3,22}$/;
+    if (!nameRegex.test(name)) {
+      return res.status(400).json({
+        success: false,
+        message: "Name must be 3–22 characters and contain only letters",
+      });
+    }
 
-    // 2️⃣ Email length check
-if (email.length > 32) {
-  return res.status(400).json({
-    success: false,
-    message: "Email must not exceed 32 characters",
-  });
-}
+    // 3️⃣ Email validation
+    if (email.length > 32) {
+      return res.status(400).json({
+        success: false,
+        message: "Email must not exceed 32 characters",
+      });
+    }
 
-// Allowed email domains only
-const emailRegex = /^[a-zA-Z0-9._%+-]+@(gmail\.com|yahoo\.com|outlook\.com)$/;
-if (!emailRegex.test(email)) {
-  return res.status(400).json({
-    success: false,
-    message: "Only gmail.com, yahoo.com, outlook.com emails are allowed",
-  });
-}
+    const emailRegex =
+      /^[a-zA-Z0-9._%+-]+@(gmail\.com|yahoo\.com|outlook\.com)$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({
+        success: false,
+        message: "Only gmail.com, yahoo.com, outlook.com emails are allowed",
+      });
+    }
 
-    // 3️⃣ Indian phone number validation (10 digits)
+    // 4️⃣ Phone validation
     const phoneRegex = /^[6-9]\d{9}$/;
     if (!phoneRegex.test(phone)) {
       return res.status(400).json({
@@ -61,110 +61,103 @@ if (!emailRegex.test(email)) {
       });
     }
 
-    
-    // 4️⃣ Password validation (5–12 chars, upper, lower, number)
-const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{5,12}$/;
-if (!passwordRegex.test(password)) {
-  return res.status(400).json({
-    success: false,
-    message:
-      "Password must be 5–12 characters and include uppercase, lowercase, and a number",
-  });
-}
-
-    
-        const usercheck = await Visitor.findOne({
-          where: {
-            [Op.or]: [{ email }, { phone }],
-          },
-          });
-
-
-        if (usercheck) {
-          if (usercheck.email === email) {
-            return res.status(400).json({ message: "Email already registered" });
-          } else if (usercheck.phone === phone) {
-            return res.status(400).json({ message: "Phone number already registered" });
-          }
-        }
-        else{
- 
-        const user = await User.create({
-        name,
-        email,
-        phone,
-        password: hashedPassword,
-        gender,
-        user_type: user_type || "user",
-        is_verified: false,
+    // 5️⃣ Password validation
+    const passwordRegex =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{5,12}$/;
+    if (!passwordRegex.test(password)) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Password must be 5–12 characters and include uppercase, lowercase, and a number",
       });
-  
-      const visitor = await Visitor.create({
-        name,
-        email,
-        phone,
-        password: hashedPassword,
-        gender,
-        user_type: user_type || "user",
-        is_verified: false,
-      });
-    
-    // 1️⃣ Create new unverified user
-    
+    }
 
-    // 2️⃣ Generate OTP
-    const otp = generateOtp();
-    const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 min expiry
-
-     // 3️⃣ Store OTP with 5-minute expiry
-    // const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
-    // await Otp.create({ user_id: user.id, otp, expires_at: expiresAt });
-
-    // // 4️⃣ Optionally send OTP via SMS
-    // try {
-    //   await axios.get("https://www.fast2sms.com/dev/bulkV2", {
-    //     headers: { authorization: process.env.FAST2SMS_API_KEY },
-    //     params: { variables_values: otp, route: "otp", numbers: phone },
-    //   });
-    // } catch (smsErr) {
-    //   console.error("Fast2SMS Error:", smsErr.message);
-    // }
-
-    // 4️⃣ Store OTP in otp table with user_id
-          await Otp.create({
-          identifier: phone,       // using phone as identifier
-          purpose: "registration", // purpose of OTP
-          otp_code: otp,
-          expires_at: expiresAt,
-          attempts: 0
-        });
-
-    
-   
-    // 5️⃣ Respond
-    console.log("Generated OTP for", phone, "is", otp); 
-    res.status(201).json({
-      message: "User registered. OTP sent to phone." + otp,
-      user: { id: user.id, name: user.name, email: user.email, phone: user.phone, gender: user.gender, user_type: user.user_type, otp: otp },
+    // 6️⃣ Duplicate check (User table)
+    const existingUser = await User.findOne({
+      where: { [Op.or]: [{ email }, { phone }] },
     });
 
-  } 
-} catch (error) {
-    console.error("Register Error:", error);
-    
-    if (error.name === "SequelizeUniqueConstraintError") {
-    const field = error.errors[0]?.path;
-    let message = "Duplicate entry found.";
-    if (field === "email") message = "Email already exists. Please use another email.";
-    else if (field === "phone") message = "Phone number already exists. Please use another number.";
+    if (existingUser) {
+      return res.status(400).json({
+        success: false,
+        message:
+          existingUser.email === email
+            ? "Email already registered"
+            : "Phone number already registered",
+      });
+    }
 
-    return res.status(400).json({
+    // 7️⃣ Hash password AFTER validation
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // 8️⃣ Create User + Visitor (transaction)
+    const user = await User.create(
+      {
+        name,
+        email,
+        phone,
+        password: hashedPassword,
+        gender,
+        user_type,
+        is_verified: false,
+      },
+      { transaction }
+    );
+
+    await Visitor.create(
+      {
+        name,
+        email,
+        phone,
+        password: hashedPassword,
+        gender,
+        user_type,
+        is_verified: false,
+      },
+      { transaction }
+    );
+
+    // 9️⃣ Generate OTP
+    const otp = generateOtp();
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
+
+    await Otp.create(
+      {
+        identifier: phone,
+        purpose: "registration",
+        otp_code: otp,
+        expires_at: expiresAt,
+        attempts: 0,
+      },
+      { transaction }
+    );
+
+    await transaction.commit();
+
+    console.log("OTP for", phone, ":", otp); // DEV ONLY
+
+    return res.status(201).json({
+      success: true,
+      message: "User registered successfully. OTP sent to phone.",
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        user_type: user.user_type,
+      },
+    });
+  } catch (error) {
+    await transaction.rollback();
+    console.error("Register Error:", error);
+
+    return res.status(500).json({
       success: false,
-      message,
+      message: "Internal server error",
     });
   }
-   }
 };
+
 
 // / ✅ Login User
 export const loginUser = async (req, res) => {

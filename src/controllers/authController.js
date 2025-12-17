@@ -13,7 +13,7 @@ function generateOtp(length = 4) {
 
 // ✅ Register User
 export const registerUser = async (req, res) => {
-  const transaction = await sequelize.transaction();
+  const client = await pool.connect();
   try {
     const data = req.body.formData || req.body;
     const { name, email, phone, password, gender } = data;

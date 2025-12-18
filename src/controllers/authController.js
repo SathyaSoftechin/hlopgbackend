@@ -12,7 +12,7 @@ function generateOtp(length = 4) {
   return Array.from({ length }, () => digits[Math.floor(Math.random() * digits.length)]).join("");
 }
 
-/ ✅ Register User (SAFE & OPTIMIZED)
+// ✅ Register User (SAFE & OPTIMIZED)
 export const registerUser = async (req, res) => {
   try {
     const data = req.body.formData || req.body;

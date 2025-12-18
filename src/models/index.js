@@ -33,7 +33,7 @@ const sequelize = new Sequelize(process.env.DATABASE_URL, {
 });
 
 sequelize.authenticate()
-  .then(() => console.log("✅ Connected to PostgreSQL"))
+  .then(() => console.log("✅ Connected to PostgreSQL Sequlize"))
   .catch(err => console.error("❌ Sequelize connection error:", err));
 
 // ✅ Initialize models

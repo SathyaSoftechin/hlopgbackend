@@ -23,7 +23,13 @@ const sequelize = new Sequelize(process.env.DATABASE_URL, {
   dialectOptions: {
     
   },
-  logging: false
+  logging: false,
+  pool: {
+    max: 20,        // IMPORTANT (default is 5)
+    min: 2,
+    acquire: 60000, // wait up to 60s
+    idle: 10000
+  }
 });
 
 sequelize.authenticate()

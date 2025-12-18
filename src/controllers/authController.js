@@ -91,6 +91,11 @@ export const registerUser = async (req, res) => {
       });
     }
 
+    
+      const otp = generateOtp();
+      const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
+
+
     /* ------------------ 7️⃣ Hash password ------------------ */
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -121,9 +126,6 @@ export const registerUser = async (req, res) => {
         },
         { transaction: t }
       );
-
-      const otp = generateOtp();
-      const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
 
       await Otp.create(
         {

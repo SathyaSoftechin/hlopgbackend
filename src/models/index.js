@@ -1,6 +1,7 @@
 // src/models/index.js
-import { Sequelize } from "sequelize";
+
 import dotenv from "dotenv";
+import { Sequelize } from "sequelize";
 
 import UserModel from "./user.js";
 import OwnerModel from "./owner.js";

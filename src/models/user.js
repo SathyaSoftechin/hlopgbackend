@@ -16,7 +16,7 @@ export default (sequelize, DataTypes) => {
         type: DataTypes.STRING(255),
         allowNull: false,
         unique: true,
-        defaultValue: 'Not Provided',
+     
       },
       phone: {
         type: DataTypes.STRING(20),

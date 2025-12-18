@@ -12,22 +12,21 @@ function generateOtp(length = 4) {
   return Array.from({ length }, () => digits[Math.floor(Math.random() * digits.length)]).join("");
 }
 
-// ✅ Register User
+/ ✅ Register User (SAFE & OPTIMIZED)
 export const registerUser = async (req, res) => {
-  const transaction = await sequelize.transaction();
   try {
     const data = req.body.formData || req.body;
     const { name, email, phone, password, gender } = data;
 
-    // 1️⃣ Required fields
-    if (!name || !email || !phone || !password ) {
+    /* ------------------ 1️⃣ Required fields ------------------ */
+    if (!name || !email || !phone || !password) {
       return res.status(400).json({
         success: false,
         message: "All fields are required",
       });
     }
 
-    // 2️⃣ Name validation
+    /* ------------------ 2️⃣ Name validation ------------------ */
     const nameRegex = /^[A-Za-z ]{3,22}$/;
     if (!nameRegex.test(name)) {
       return res.status(400).json({
@@ -36,7 +35,7 @@ export const registerUser = async (req, res) => {
       });
     }
 
-    // 3️⃣ Email validation
+    /* ------------------ 3️⃣ Email validation ------------------ */
     if (email.length > 32) {
       return res.status(400).json({
         success: false,
@@ -46,6 +45,7 @@ export const registerUser = async (req, res) => {
 
     const emailRegex =
       /^[a-zA-Z0-9._%+-]+@(gmail\.com|yahoo\.com|outlook\.com)$/;
+
     if (!emailRegex.test(email)) {
       return res.status(400).json({
         success: false,
@@ -53,7 +53,7 @@ export const registerUser = async (req, res) => {
       });
     }
 
-    // 4️⃣ Phone validation
+    /* ------------------ 4️⃣ Phone validation ------------------ */
     const phoneRegex = /^[6-9]\d{9}$/;
     if (!phoneRegex.test(phone)) {
       return res.status(400).json({
@@ -62,9 +62,10 @@ export const registerUser = async (req, res) => {
       });
     }
 
-    // 5️⃣ Password validation
+    /* ------------------ 5️⃣ Password validation ------------------ */
     const passwordRegex =
       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{5,12}$/;
+
     if (!passwordRegex.test(password)) {
       return res.status(400).json({
         success: false,
@@ -73,9 +74,11 @@ export const registerUser = async (req, res) => {
       });
     }
 
-    // 6️⃣ Duplicate check (User table)
+    /* ------------------ 6️⃣ Duplicate check ------------------ */
     const existingUser = await User.findOne({
-      where: { [Op.or]: [{ email }, { phone }] },
+      where: {
+        [Op.or]: [{ email }, { phone }],
+      },
     });
 
     if (existingUser) {
@@ -88,69 +91,69 @@ export const registerUser = async (req, res) => {
       });
     }
 
-    // 7️⃣ Hash password AFTER validation
+    /* ------------------ 7️⃣ Hash password ------------------ */
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // 8️⃣ Create User + Visitor (transaction)
-    const user = await User.create(
-      {
-        name,
-        email,
-        phone,
-        password: hashedPassword,
-        gender,
-        user_type : "user",
-        is_verified: false,
-      },
-      { transaction }
-    );
+    /* ------------------ 8️⃣ Create records (MANAGED TRANSACTION) ------------------ */
+    const result = await sequelize.transaction(async (t) => {
+      const user = await User.create(
+        {
+          name,
+          email,
+          phone,
+          password: hashedPassword,
+          gender,
+          user_type: "user",
+          is_verified: false,
+        },
+        { transaction: t }
+      );
 
-    await Visitor.create(
-      {
-        name,
-        email,
-        phone,
-        password: hashedPassword,
-        gender,
-        user_type: "user",
-        is_verified: false,
-      },
-      { transaction }
-    );
+      await Visitor.create(
+        {
+          name,
+          email,
+          phone,
+          password: hashedPassword,
+          gender,
+          user_type: "user",
+          is_verified: false,
+        },
+        { transaction: t }
+      );
 
-    // 9️⃣ Generate OTP
-    const otp = generateOtp();
-    const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
+      const otp = generateOtp();
+      const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
 
-    await Otp.create(
-      {
-        identifier: phone,
-        purpose: "registration",
-        otp_code: otp,
-        expires_at: expiresAt,
-        attempts: 0,
-      },
-      { transaction }
-    );
+      await Otp.create(
+        {
+          identifier: phone,
+          purpose: "registration",
+          otp_code: otp,
+          expires_at: expiresAt,
+          attempts: 0,
+        },
+        { transaction: t }
+      );
 
-    await transaction.commit();
+      return { user, otp };
+    });
 
-    console.log("OTP for", phone, ":", otp); // DEV ONLY
+    /* ------------------ 9️⃣ Success ------------------ */
+    console.log("OTP for", phone, ":", result.otp); // DEV ONLY
 
     return res.status(201).json({
       success: true,
       message: "User registered successfully. OTP sent to phone.",
       user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        phone: user.phone,
-        user_type: user.user_type,
-        otp : user.otp,
+        id: result.user.user_id,
+        name: result.user.name,
+        email: result.user.email,
+        phone: result.user.phone,
+        user_type: result.user.user_type,
       },
     });
   } catch (error) {
-    await transaction.rollback();
     console.error("Register Error:", error);
 
     return res.status(500).json({

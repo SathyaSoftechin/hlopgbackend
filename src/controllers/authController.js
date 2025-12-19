@@ -134,11 +134,11 @@ export const loginUser = async (req, res) => {
 // ✅ Register Owner
 export const registerOwner = async (req, res) => {
   try {
-    const { name, email, phone, password, user_type } = req.body.formData;
+    const { name, email, phone, password } = req.body.formData;
 
 
     // 1️⃣ Required fields check
-    if (!name || !email || !phone || !password  || !user_type) {
+    if (!name || !email || !phone || !password ) {
       return res.status(400).json({
         success: false,
         message: "All fields are required",
@@ -195,7 +195,7 @@ export const registerOwner = async (req, res) => {
       email,
       phone,
       password: hashedPassword,
-      user_type: user_type || "owner",
+      user_type:  "owner",
       is_verified: false,
     });
 
@@ -204,7 +204,7 @@ export const registerOwner = async (req, res) => {
       email,
       phone,
       password: hashedPassword,
-      user_type: user_type || "user",
+      user_type:  "owner",
       is_verified: false,
     });
 

@@ -12,97 +12,26 @@ function generateOtp(length = 4) {
   return Array.from({ length }, () => digits[Math.floor(Math.random() * digits.length)]).join("");
 }
 
-// ✅ Register User (SAFE & OPTIMIZED)
 export const registerUser = async (req, res) => {
   try {
     const data = req.body.formData || req.body;
-    const { name, email, phone, password, gender } = data;
+    let { name, email, phone, password, gender } = data;
 
-    /* ------------------ 1️⃣ Required fields ------------------ */
+    email = email.toLowerCase();
+
+    // validations (outside transaction)
     if (!name || !email || !phone || !password) {
-      return res.status(400).json({
-        success: false,
-        message: "All fields are required",
-      });
+      return res.status(400).json({ success: false, message: "Missing fields" });
     }
 
-    /* ------------------ 2️⃣ Name validation ------------------ */
-    const nameRegex = /^[A-Za-z ]{3,22}$/;
-    if (!nameRegex.test(name)) {
-      return res.status(400).json({
-        success: false,
-        message: "Name must be 3–22 characters and contain only letters",
-      });
-    }
-
-    /* ------------------ 3️⃣ Email validation ------------------ */
-    if (email.length > 32) {
-      return res.status(400).json({
-        success: false,
-        message: "Email must not exceed 32 characters",
-      });
-    }
-
-    const emailRegex =
-      /^[a-zA-Z0-9._%+-]+@(gmail\.com|yahoo\.com|outlook\.com)$/;
-
-    if (!emailRegex.test(email)) {
-      return res.status(400).json({
-        success: false,
-        message: "Only gmail.com, yahoo.com, outlook.com emails are allowed",
-      });
-    }
-
-    /* ------------------ 4️⃣ Phone validation ------------------ */
-    const phoneRegex = /^[6-9]\d{9}$/;
-    if (!phoneRegex.test(phone)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid Indian phone number",
-      });
-    }
-
-    /* ------------------ 5️⃣ Password validation ------------------ */
-    const passwordRegex =
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{5,12}$/;
-
-    if (!passwordRegex.test(password)) {
-      return res.status(400).json({
-        success: false,
-        message:
-          "Password must be 5–12 characters and include uppercase, lowercase, and a number",
-      });
-    }
-
-    /* ------------------ 6️⃣ Duplicate check ------------------ */
-    const existingUser = await User.findOne({
-      where: {
-        [Op.or]: [{ email }, { phone }],
-      },
-    });
-
-    if (existingUser) {
-      return res.status(400).json({
-        success: false,
-        message:
-          existingUser.email === email
-            ? "Email already registered"
-            : "Phone number already registered",
-      });
-    }
-
-    
-      const otp = generateOtp();
-      const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
-
-
-    /* ------------------ 7️⃣ Hash password ------------------ */
     const hashedPassword = await bcrypt.hash(password, 10);
+    const otp = generateOtp();
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
 
-    /* ------------------ 8️⃣ Create records (MANAGED TRANSACTION) ------------------ */
-    const result = await sequelize.transaction(async (t) => {
-      const user = await User.create(
-        {
+    const user = await withRetry(() =>
+      sequelize.transaction(async (t) => {
+
+        const createdUser = await User.create({
           name,
           email,
           phone,
@@ -110,12 +39,9 @@ export const registerUser = async (req, res) => {
           gender,
           user_type: "user",
           is_verified: false,
-        },
-        { transaction: t }
-      );
+        }, { transaction: t });
 
-      await Visitor.create(
-        {
+        await Visitor.create({
           name,
           email,
           phone,
@@ -123,47 +49,44 @@ export const registerUser = async (req, res) => {
           gender,
           user_type: "user",
           is_verified: false,
-        },
-        { transaction: t }
-      );
+        }, { transaction: t });
 
-      await Otp.create(
-        {
+        await Otp.upsert({
           identifier: phone,
           purpose: "registration",
           otp_code: otp,
           expires_at: expiresAt,
           attempts: 0,
-        },
-        { transaction: t }
-      );
+        }, { transaction: t });
 
-      return { user, otp };
-    });
-
-    /* ------------------ 9️⃣ Success ------------------ */
-    console.log("OTP for", phone, ":", result.otp); // DEV ONLY
+        return createdUser;
+      })
+    );
 
     return res.status(201).json({
       success: true,
-      message: "User registered successfully. OTP sent to phone.",
+      message: "Registered. OTP sent.",
       user: {
-        id: result.user.user_id,
-        name: result.user.name,
-        email: result.user.email,
-        phone: result.user.phone,
-        user_type: result.user.user_type,
+        id: user.user_id,
+        email: user.email,
+        phone: user.phone,
       },
     });
-  } catch (error) {
-    console.error("Register Error:", error);
 
-    return res.status(500).json({
-      success: false,
-      message: "Internal server error",
-    });
+  } catch (err) {
+    console.error("Register error:", err);
+
+    if (err.name === "SequelizeUniqueConstraintError") {
+      return res.status(409).json({
+        success: false,
+        message: "Email or phone already registered",
+      });
+    }
+
+    return res.status(500).json({ success: false, message: "Server busy, try again" });
   }
 };
+
 
 
 // / ✅ Login User

@@ -284,60 +284,112 @@ export const loginOwner = async (req, res) => {
 
 
 export const verifyOtp = async (req, res) => {
-  try {
-    const { identifier, otp_code, purpose } = req.body; // phone/email + OTP + purpose
+  const transaction = await sequelize.transaction();
 
-    // 1️⃣ Fetch OTP from DB
-    const otpRecord = await Otp.findOne({ 
-      where: { identifier, purpose } 
+  try {
+    const { identifier, otp_code, purpose } = req.body;
+
+    if (!identifier || !otp_code || !purpose) {
+      return res.status(400).json({
+        success: false,
+        message: "Identifier, OTP and purpose are required"
+      });
+    }
+
+    // 1️⃣ Fetch OTP with lock
+    const otpRecord = await Otp.findOne({
+      where: { identifier, purpose },
+      lock: transaction.LOCK.UPDATE,
+      transaction
     });
 
-         
-      // Increment attempts
-   
-
     if (!otpRecord) {
-      return res.status(400).json({ success: false, message: "OTP not found. Please request a new OTP." });
+      await transaction.rollback();
+      return res.status(400).json({
+        success: false,
+        message: "OTP not found. Please request a new OTP."
+      });
     }
 
-    // 2️⃣ Check if OTP already verified
+    // 2️⃣ Already verified
     if (otpRecord.verified_at) {
-      return res.status(400).json({ success: false, message: "OTP already verified." });
+      await transaction.rollback();
+      return res.status(400).json({
+        success: false,
+        message: "OTP already verified."
+      });
     }
 
-    // 3️⃣ Check expiry
+    // 3️⃣ Expired
     if (new Date() > otpRecord.expires_at) {
-      return res.status(400).json({ success: false, message: "OTP expired. Please request a new one." });
+      await transaction.rollback();
+      return res.status(400).json({
+        success: false,
+        message: "OTP expired. Please request a new one."
+      });
     }
 
-    // 4️⃣ Check attempts limit
+    // 4️⃣ Attempt limit
     if (otpRecord.attempts >= 5) {
-      return res.status(400).json({ success: false, message: "Maximum OTP attempts exceeded." });
+      await transaction.rollback();
+      return res.status(400).json({
+        success: false,
+        message: "Maximum OTP attempts exceeded."
+      });
     }
 
-    // 5️⃣ Verify OTP
-    if (otpRecord.otp_code !== otp_code) {
-      // Increment attempts
+    // 5️⃣ Compare OTP (hashed)
+    const isOtpValid = await bcrypt.compare(
+      otp_code.toString(),
+      otpRecord.otp_code
+    );
+
+    if (!isOtpValid) {
       otpRecord.attempts += 1;
-      await otpRecord.save();
-      return res.status(400).json({ success: false, message: "Invalid OTP. Please try again." });
+      await otpRecord.save({ transaction });
+
+      await transaction.commit();
+      return res.status(400).json({
+        success: false,
+        message: "Invalid OTP. Please try again."
+      });
     }
 
-    // 6️⃣ Mark OTP verified and user as verified
+    // 6️⃣ Mark OTP verified
     otpRecord.verified_at = new Date();
-    await otpRecord.save();
+    otpRecord.attempts += 1;
+    await otpRecord.save({ transaction });
 
-    const user = await User.findOne({ where: { phone: identifier } }); // or email
+    // 7️⃣ Verify user (phone OR email)
+    const user = await User.findOne({
+      where: {
+        [sequelize.Op.or]: [
+          { phone: identifier },
+          { email: identifier }
+        ]
+      },
+      transaction
+    });
+
     if (user) {
       user.is_verified = true;
-      await user.save();
+      await user.save({ transaction });
     }
 
-    return res.json({ success: true, message: "OTP verified successfully." });
+    await transaction.commit();
+
+    return res.json({
+      success: true,
+      message: "OTP verified successfully."
+    });
 
   } catch (error) {
+    await transaction.rollback();
     console.error("Verify OTP Error:", error);
-    return res.status(500).json({ success: false, message: "Internal server error." });
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error."
+    });
   }
 };
 

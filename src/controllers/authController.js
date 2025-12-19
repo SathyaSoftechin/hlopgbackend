@@ -131,121 +131,80 @@ export const loginUser = async (req, res) => {
   }
 };
 
-// ✅ Register Owner
 export const registerOwner = async (req, res) => {
   try {
-    const { name, email, phone, password } = req.body.formData;
+    const data = req.body.formData || req.body;
+    let { name, email, phone, password } = data;
+    email = email.toLowerCase();
 
-
-    // 1️⃣ Required fields check
-    if (!name || !email || !phone || !password ) {
-      return res.status(400).json({
-        success: false,
-        message: "All fields are required",
-      });
+    if (!name || !email || !phone || !password) {
+      return res.status(400).json({ success: false, message: "All fields are required" });
     }
 
-    // 2️⃣ Email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid email format",
-      });
-    }
-
-    // 3️⃣ Indian phone number validation (10 digits)
     const phoneRegex = /^[6-9]\d{9}$/;
     if (!phoneRegex.test(phone)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid Indian phone number",
-      });
+      return res.status(400).json({ success: false, message: "Invalid Indian phone number" });
     }
- 
 
-    // 5️⃣ User type validation
-    const allowedUserTypes = [ "owner"];
-    if (!allowedUserTypes.includes(user_type.toLowerCase())) {
-      return res.status(400).json({
-        success: false,
-        message: "User type must be  owner",
-      });
-    }
     const hashedPassword = await bcrypt.hash(password, 10);
-
-
-   const usercheck = await Visitor.findOne({
-          where: {
-            [Op.or]: [{ email }, { phone }],
-          },
-          });
-          
-        if (usercheck) {
-          if (usercheck.email === email) {
-            return res.status(400).json({ message: "Email already registered" });
-          } else if (usercheck.phone === phone) {
-            return res.status(400).json({ message: "Phone number already registered" });
-          }
-          }
-
-    // 1️⃣ Create owner
-    const owner = await Owner.create({
-      name,
-      email,
-      phone,
-      password: hashedPassword,
-      user_type:  "owner",
-      is_verified: false,
-    });
-
-     const visitor = await Visitor.create({
-      name,
-      email,
-      phone,
-      password: hashedPassword,
-      user_type:  "owner",
-      is_verified: false,
-    });
-
-    
-
-
-
-
-    // 2️⃣ Generate OTP
     const otp = generateOtp();
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
 
-    // 3️⃣ Store OTP
-    await Otp.create({
-      identifier: phone, // use phone as identifier
-      purpose: "registration",
-      otp_code: otp,
-      expires_at: expiresAt,
-      attempts: 0,
+    // ✅ Transaction + Upsert for high concurrency
+    const owner = await sequelize.transaction(async (t) => {
+      const createdOwner = await Owner.create({
+        name,
+        email,
+        phone,
+        password: hashedPassword,
+        user_type: "owner",
+        is_verified: false,
+      }, { transaction: t });
+
+      await Visitor.create({
+        name,
+        email,
+        phone,
+        password: hashedPassword,
+        user_type: "owner",
+        is_verified: false,
+      }, { transaction: t });
+
+      // Use upsert to avoid OTP duplicates
+      await Otp.upsert({
+        identifier: phone,
+        purpose: "registration",
+        otp_code: otp,
+        expires_at: expiresAt,
+        attempts: 0,
+      }, { transaction: t });
+
+      return createdOwner;
     });
 
-        console.log("Generated OTP for", phone, "is", otp); 
+    console.log("Generated OTP for", phone, "is", otp);
 
-    // 4️⃣ Respond
     res.status(201).json({
       message: "Owner registered. OTP sent to phone.",
       user: { id: owner.id, name: owner.name, email: owner.email, phone: owner.phone, user_type: owner.user_type, otp },
     });
+
   } catch (err) {
     console.error("Register Owner Error:", err);
+
     if (err.name === "SequelizeUniqueConstraintError") {
       const field = err.errors[0]?.path;
       let message = "Duplicate entry found.";
       if (field === "email") message = "Email already exists. Please use another email.";
       else if (field === "phone") message = "Phone number already exists. Please use another number.";
 
-      return res.status(400).json({ success: false, message });
+      return res.status(409).json({ success: false, message });
     }
-    res.status(500).json({ error: err.message });
+
+    res.status(500).json({ error: "Server busy, try again." });
   }
 };
+
 
 // ✅ Login Owner
 export const loginOwner = async (req, res) => {

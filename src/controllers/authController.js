@@ -12,6 +12,26 @@ function generateOtp(length = 4) {
   return Array.from({ length }, () => digits[Math.floor(Math.random() * digits.length)]).join("");
 }
 
+const withRetry = async (fn, retries = 3, delay = 500) => {
+  let lastError;
+
+  for (let i = 0; i < retries; i++) {
+    try {
+      return await fn();
+    } catch (err) {
+      lastError = err;
+      if (i < retries - 1) {
+        await new Promise(res => setTimeout(res, delay));
+      }
+    }
+  }
+
+  throw lastError;
+};
+
+
+
+
 export const registerUser = async (req, res) => {
   try {
     const data = req.body.formData || req.body;
@@ -19,7 +39,6 @@ export const registerUser = async (req, res) => {
 
     if(email){
     email = email.toLowerCase();
-
     }
 
     // validations (outside transaction)

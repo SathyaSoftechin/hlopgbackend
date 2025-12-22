@@ -114,17 +114,38 @@ export const registerUser = async (req, res) => {
 // / ✅ Login User
 export const loginUser = async (req, res) => {
   try {
-    const formData = req.body.formData;
+    const formData = req.body.formData || req.body;
     if (!formData) {
       return res.status(400).json({ error: "Form data is required" });
     }
 
-    const { email, password } = formData;
-    if (!email || !password) {
-      return res.status(400).json({ error: "Email and password are required" });
+    const { identifier, password } = formData;
+    if (!identifier || !password) {
+      return res.status(400).json({ error: "Email or phone and password are required" });
     }
 
-    const user = await User.findOne({ where: { email } });
+        let whereCondition = {};
+
+         // 🔹 Phone login (10 digits)
+    if (/^\d{10}$/.test(identifier)) {
+      whereCondition.phone = identifier;
+    }
+    // 🔹 Email login (gmail / yahoo / outlook)
+    else if (/^[a-zA-Z0-9._%+-]+@(gmail|yahoo|outlook)\.com$/.test(identifier)) {
+      whereCondition.email = identifier.toLowerCase();
+    }
+    // 🔹 Invalid input
+    else {
+      return res.status(400).json({
+        success: false,
+        message: "Enter valid email or 10-digit phone number",
+      });
+    }
+
+
+
+
+    const user = await User.findOne({ where: { whereCondition  } });
     if (!user) return res.status(401).json({ error: "User not registered" });
 
     const isPasswordValid = await bcrypt.compare(password, user.password);

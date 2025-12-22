@@ -15,9 +15,10 @@ export const registerUser = async (req, res) => {
   try {
     const data = req.body.formData || req.body;
     let { name, email, phone, password, gender } = data;
-
-    email = email.toLowerCase();
-
+if (email) {
+  email = email.toLowerCase();
+}
+ 
     // 🔹 Basic required validations
     if (!name || !email || !phone || !password) {
       return res.status(400).json({

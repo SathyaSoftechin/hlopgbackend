@@ -124,28 +124,23 @@ export const loginUser = async (req, res) => {
       return res.status(400).json({ error: "Email or phone and password are required" });
     }
 
-        let whereCondition = {};
+       let whereCondition = {};
 
-         // 🔹 Phone login (10 digits)
-    if (/^\d{10}$/.test(identifier)) {
-      whereCondition.phone = identifier;
-    }
-    // 🔹 Email login (gmail / yahoo / outlook)
-    else if (/^[a-zA-Z0-9._%+-]+@(gmail|yahoo|outlook)\.com$/.test(identifier)) {
-      whereCondition.email = identifier.toLowerCase();
-    }
-    // 🔹 Invalid input
-    else {
-      return res.status(400).json({
-        success: false,
-        message: "Enter valid email or 10-digit phone number",
-      });
-    }
+if (/^\d{10}$/.test(identifier)) {
+  whereCondition.phone = identifier;
+} else if (/^[a-zA-Z0-9._%+-]+@(gmail|yahoo|outlook)\.com$/.test(identifier)) {
+  whereCondition.email = identifier.toLowerCase();
+} else {
+  return res.status(400).json({
+    success: false,
+    message: "Enter valid email or 10-digit phone number",
+  });
+}
 
+const user = await User.findOne({
+  where: whereCondition   // ✅ FIX IS HERE
+});
 
-
-
-    const user = await User.findOne({ where: { whereCondition  } });
     if (!user) return res.status(401).json({ error: "User not registered" });
 
     const isPasswordValid = await bcrypt.compare(password, user.password);

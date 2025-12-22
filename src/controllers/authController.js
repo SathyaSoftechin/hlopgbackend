@@ -55,6 +55,16 @@ export const registerUser = async (req, res) => {
       });
     }
 
+
+    const phoneRegex = /^[6-9]\d{9}$/;
+if (!phoneRegex.test(phone)) {
+  return res.status(400).json({
+    success: false,
+    message: "Phone number must be exactly 10 digits",
+  });
+}
+
+
     // 🔹 Email validation (gmail, yahoo, outlook only)
     const emailRegex = /^[a-zA-Z0-9._%+-]+@(gmail|yahoo|outlook)\.com$/;
     if (!emailRegex.test(email)) {
@@ -75,7 +85,7 @@ export const registerUser = async (req, res) => {
           "Password must be 5–12 characters, include uppercase, lowercase, and number",
       });
     }
-    
+
     const hashedPassword = await bcrypt.hash(password, 10);
     const otp = generateOtp();
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000);

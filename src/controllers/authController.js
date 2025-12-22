@@ -46,6 +46,36 @@ export const registerUser = async (req, res) => {
       return res.status(400).json({ success: false, message: "Missing fields" });
     }
 
+
+     // 🔹 Name validation (3–12 chars)
+    if (name.length < 3 || name.length > 12) {
+      return res.status(400).json({
+        success: false,
+        message: "Name must be between 3 and 12 characters",
+      });
+    }
+
+    // 🔹 Email validation (gmail, yahoo, outlook only)
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@(gmail|yahoo|outlook)\.com$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({
+        success: false,
+        message: "Email must be gmail, yahoo, or outlook only",
+      });
+    }
+
+    // 🔹 Password validation
+    const passwordRegex =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{5,12}$/;
+
+    if (!passwordRegex.test(password)) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Password must be 5–12 characters, include uppercase, lowercase, and number",
+      });
+    }
+    
     const hashedPassword = await bcrypt.hash(password, 10);
     const otp = generateOtp();
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000);

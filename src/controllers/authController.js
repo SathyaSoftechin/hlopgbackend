@@ -65,7 +65,7 @@ export const registerUser = async (req, res) => {
 
     return res.status(201).json({
       success: true,
-      message: "Registered. OTP sent to phone.",
+      message: "Registered. OTP sent to  given phone.",
       user: {
         id: user.user_id,
         email: user.email,

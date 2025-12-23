@@ -51,7 +51,7 @@ export const registerUser = async (req, res) => {
     if (name.length < 3 || name.length > 32) {
       return res.status(400).json({
         success: false,
-        message: "Name must be between 3 and 12 characters",
+        message: "Name must be between 3 and 32 characters",
       });
     }
 
@@ -213,7 +213,9 @@ export const registerOwner = async (req, res) => {
   try {
     const data = req.body.formData || req.body;
     let { name, email, phone, password } = data;
+    if(email){
     email = email.toLowerCase();
+    }
 
     if (!name || !email || !phone || !password) {
       return res.status(400).json({ success: false, message: "All fields are required" });
@@ -287,8 +289,44 @@ export const registerOwner = async (req, res) => {
 // ✅ Login Owner
 export const loginOwner = async (req, res) => {
   try {
-    const { email, password } = req.body.formData;
-    const owner = await Owner.findOne({ where: { email } });
+const formData = req.body.formData || req.body;
+    if (!formData) {
+      return res.status(400).json({ error: "Form data is required" });
+    }
+
+    
+
+        const { identifier, password } = formData;
+
+        if (!identifier || !password) {
+      return res.status(400).json({
+        error: "Email or phone and password are required",
+      });
+    }
+
+     let whereCondition = {};
+
+if (/^\d{10}$/.test(identifier)) {
+  whereCondition.phone = identifier;
+} else if (/^[a-zA-Z0-9._%+-]+@(gmail|yahoo|outlook)\.com$/.test(identifier)) {
+  whereCondition.email = identifier.toLowerCase();
+} else {
+  return res.status(400).json({
+    success: false,
+    message: "Enter valid email or 10-digit phone number",
+  });
+}
+
+
+
+    
+const owner = await Owner.findOne({
+  where: whereCondition   // ✅ FIX IS HERE
+});
+
+
+    
+    //const owner = await Owner.findOne({ where: { email } });
 
     if (!owner) return res.status(400).json({ error: "Owner Not Registered yet" });
 

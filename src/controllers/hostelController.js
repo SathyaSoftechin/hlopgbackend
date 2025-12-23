@@ -76,11 +76,13 @@
       state,
       pincode,
       rules,
-      ownerId,
-      furnish,
+       furnish,
       sharing,
       foodMenu
     } = req.body;
+
+        const ownerId = req.owner.owner_id; // 🔐 FROM TOKEN
+
 
 
      // ✔️ Find minimum price from sharing JSON

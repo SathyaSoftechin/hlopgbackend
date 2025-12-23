@@ -82,7 +82,9 @@
     } = req.body;
 
         const ownerId = req.owner.owner_id; // 🔐 FROM TOKEN
-
+if(!ownerId){
+  return res.status(401).json({ error: "Unauthrozed invalid Token" });
+}
 
 
      // ✔️ Find minimum price from sharing JSON

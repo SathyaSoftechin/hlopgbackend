@@ -48,7 +48,7 @@ export const registerUser = async (req, res) => {
 
 
      // 🔹 Name validation (3–12 chars)
-    if (name.length < 3 || name.length > 12) {
+    if (name.length < 3 || name.length > 32) {
       return res.status(400).json({
         success: false,
         message: "Name must be between 3 and 12 characters",

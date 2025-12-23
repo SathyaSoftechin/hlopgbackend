@@ -26,21 +26,19 @@ export const verifyOwnerToken = async (req, res, next) => {
 
     const token = authHeader.split(" ")[1];
 
+ 
+    // ✅ Verify token only
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    // optional: fetch user from DB
-    const owner = await Owner.findByPk(decoded.owner_id);
-
-    if (!owner) {
-      return res.status(401).json({ error: "Invalid token owner" });
-    }
-
-    // attach user to request
-    req.owner = owner;
+    // ✅ Attach owner data from token
+    req.owner = {
+      owner_id: decoded.owner_id,
+    };
 
     next();
-  } catch (error) {
-    console.error("Auth error:", error);
+  } catch (err) {
+    console.error("Auth error:", err.message);
     return res.status(401).json({ error: "Invalid or expired token" });
   }
+ 
 };

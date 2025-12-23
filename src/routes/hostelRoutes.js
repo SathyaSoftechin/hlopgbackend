@@ -17,7 +17,7 @@ router.get("/benhostels", benHostels);
 router.get("/:hostel_id", getHostelById);
 router.put("/:hostel_id", updateHostel);  // <-- PUT endpoint
 
-router.post("/addhostel", verifyToken, upload.none(), addHostel);
+router.post("/addhostel", verifyOwnerToken, upload.none(), addHostel);
  
 
 

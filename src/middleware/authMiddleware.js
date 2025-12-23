@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import Owner from "../models/owner.js"; // adjust path if needed
+import { Owner } from "../models/index.js";
 
 
 export const authenticateUserToken = (req, res, next) => {

@@ -66,6 +66,13 @@
 
    export const addHostel = async (req, res) => {
   try {
+
+        if (!req.body) return res.status(400).json({ error: "Request body missing" });
+
+    console.log("BODY:", req.body);
+
+
+
     const {
       pgName,
       pgInfo,
@@ -81,11 +88,7 @@
       foodMenu
     } = req.body;
 
-        console.log("BODY:", req.body); // 🔍 debug
-
-    if (!req.body) {
-      return res.status(400).json({ error: "Request body missing" });
-    }
+       
 
 
 

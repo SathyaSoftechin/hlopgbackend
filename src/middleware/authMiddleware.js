@@ -29,6 +29,8 @@ export const verifyOwnerToken = async (req, res, next) => {
  
     // ✅ Verify token only
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    console.log(decoded); // 🔍 Check what's actually inside
+
 
     // ✅ Attach owner data from token
     req.owner = {

@@ -34,7 +34,7 @@ export const verifyOwnerToken = async (req, res, next) => {
 
     // ✅ Attach owner data from token
     req.owner = {
-      owner_id: decoded.owner_id,
+      owner_id: decoded.user_id,
     };
 
     next();

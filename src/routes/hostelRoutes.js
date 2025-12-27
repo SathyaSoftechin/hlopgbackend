@@ -1,6 +1,6 @@
 import express from "express";
 import multer from "multer";
-import { verifyOwnerToken } from "../middleware/authMiddleware.js";
+import { verifyOwnerToken, authenticateUserToken } from "../middleware/authMiddleware.js";
 
 
 import {  getHostels, hydHostels, cheHostels, benHostels, getHostelById, addHostel, updateHostel, toggleLikeHostel, getLikedHostels   } from "../controllers/hostelController.js";
@@ -16,8 +16,8 @@ router.get("/chehostels", cheHostels);
 router.get("/benhostels", benHostels);
 router.get("/:hostel_id", getHostelById);
 router.put("/:hostel_id", updateHostel);  // <-- PUT endpoint
-router.post("/like-hostel", authMiddleware, toggleLikeHostel);
-router.get("/liked-hostels", authMiddleware, getLikedHostels);
+router.post("/like-hostel", authenticateUserToken, toggleLikeHostel);
+router.get("/liked-hostels", authenticateUserToken, getLikedHostels);
 
 
 router.post("/addhostel", verifyOwnerToken, upload.none(), addHostel);

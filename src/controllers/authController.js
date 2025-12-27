@@ -454,9 +454,7 @@ if (/^[6-9]\d{9}$/.test(identifier)) {
 
     // 7️⃣ Verify user (phone OR email)
     const user = await User.findOne({
-      where: {
-        whereCondition
-      },
+      where: whereCondition,
       transaction
     });
 

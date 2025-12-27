@@ -12,6 +12,8 @@ import VisitorModel from "./visitor.js";
 import ReviewModel from "./review.js";
 import BookingModel from "./booking.js";
 import RoomModel from "./room.js";
+import LikedHostelModel from "./likedHostel.js"; // ✅ NEW
+
 
 
 
@@ -46,7 +48,7 @@ const Visitor = VisitorModel(sequelize, Sequelize.DataTypes);
 const Review = ReviewModel(sequelize, Sequelize.DataTypes);
 const Booking = BookingModel(sequelize, Sequelize.DataTypes);
 const Room = RoomModel(sequelize, Sequelize.DataTypes);
-
+const LikedHostel = LikedHostelModel(sequelize, Sequelize.DataTypes);  
 
 
 
@@ -76,7 +78,35 @@ Room.belongsTo(Hostel, { foreignKey: "hostel_id", as: "hostel" });
 
 
 
+// =====================
+// ❤️ User ↔ LikedHostel
+// =====================
+User.hasMany(LikedHostel, {
+  foreignKey: "user_id",
+  as: "likedHostels",
+  onDelete: "CASCADE",
+});
+
+LikedHostel.belongsTo(User, {
+  foreignKey: "user_id",
+  as: "user",
+});
+
+// Hostel ↔ LikedHostel
+Hostel.hasMany(LikedHostel, {
+  foreignKey: "hostel_id",
+  as: "likes",
+  onDelete: "CASCADE",
+});
+
+LikedHostel.belongsTo(Hostel, {
+  foreignKey: "hostel_id",
+  as: "hostel",
+});
+
+
+
 // ✅ Export everything
-export { sequelize, Sequelize, User, Owner, Hostel, FoodMenu, Otp, Visitor, Review, Booking, Room };
-export default { sequelize, Sequelize, User, Owner, Hostel, FoodMenu, Otp, Visitor, Review, Booking, Room };
+export { sequelize, Sequelize, User, Owner, Hostel, FoodMenu, Otp, Visitor, Review, Booking, Room, LikedHostel };
+export default { sequelize, Sequelize, User, Owner, Hostel, FoodMenu, Otp, Visitor, Review, Booking, Room, LikedHostel };
 

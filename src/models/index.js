@@ -12,7 +12,7 @@ import VisitorModel from "./visitor.js";
 import ReviewModel from "./review.js";
 import BookingModel from "./booking.js";
 import RoomModel from "./room.js";
-import LikedHostelModel from "./likedHostel.js"; // ✅ NEW
+import LikedHostelModel from "./likedHostel.js"; 
 
 
 

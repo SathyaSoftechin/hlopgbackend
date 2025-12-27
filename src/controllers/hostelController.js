@@ -188,3 +188,57 @@ export const updateHostel = async (req, res) => {
   }
 };
 
+
+
+
+
+
+
+// POST /like-hostel
+export const toggleLikeHostel = async (req, res) => {
+  try {
+    const userId = req.user.user_id;
+    const { hostel_id } = req.body;
+
+    const existing = await LikedHostel.findOne({
+      where: { user_id: userId, hostel_id },
+    });
+
+    if (existing) {
+      await existing.destroy();
+      return res.json({ liked: false });
+    }
+
+    await LikedHostel.create({
+      user_id: userId,
+      hostel_id,
+    });
+
+    res.json({ liked: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Failed to toggle like" });
+  }
+};
+
+
+// GET /liked-hostels
+export const getLikedHostels = async (req, res) => {
+  try {
+    const userId = req.user.user_id;
+
+    const liked = await LikedHostel.findAll({
+      where: { user_id: userId },
+      include: [
+        {
+          model: Hostel,
+          as: "hostel",
+        },
+      ],
+    });
+
+    res.json(liked.map(l => l.hostel));
+  } catch (err) {
+    res.status(500).json({ message: "Failed to fetch liked hostels" });
+  }
+};

@@ -21,17 +21,17 @@ export default (sequelize, DataTypes) => {
         allowNull: false,
       },
       expires_at: {
-        type: DataTypes.DATE,
-        allowNull: false,
-      },
+  type: DataTypes.DATE, // NOT STRING
+  allowNull: false
+},
       created_at: {
         type: DataTypes.DATE,
         defaultValue: DataTypes.NOW,
       },
-      verified_at: {
-        type: DataTypes.DATE,
-        allowNull: true,
-      },
+     verified_at: {
+  type: DataTypes.DATE,
+  allowNull: true
+},
       attempts: {
         type: DataTypes.INTEGER,
         defaultValue: 0,

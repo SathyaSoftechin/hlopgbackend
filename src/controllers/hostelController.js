@@ -92,7 +92,7 @@
 
 
 
-        const ownerId = req.owner.owner_id; // 🔐 FROM TOKEN
+const ownerId = req.owner.owner_id; // 🔐 FROM TOKEN
 if(!ownerId){
   return res.status(401).json({ error: "Unauthrozed invalid Token" });
 }
@@ -105,7 +105,7 @@ if(!ownerId){
       minPrice = Math.min(...priceList);
     }
 
-    if (!pgName || !pgInfo || !pgType || !address || !city || !area) {
+    if (!pgName || !pgInfo || !pgType || !address || !city || !area || sharing) {
       return res.status(400).json({ error: "Please fill all required fields" });
     }
 

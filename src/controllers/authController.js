@@ -132,6 +132,7 @@ if (!phoneRegex.test(phone)) {
         id: user.user_id,
         email: user.email,
         phone: user.phone,
+        otp:user.otp,
       },
     });
 
@@ -413,35 +414,48 @@ export const verifyOtp = async (req, res) => {
       });
     }
 
-    // 5️⃣ Compare OTP (hashed)
-    const isOtpValid = await bcrypt.compare(
-      otp_code.toString(),
-      otpRecord.otp_code
-    );
+    // 5️⃣ Compare OTP (PLAIN TEXT)
+if (otp_code.toString() !== otpRecord.otp_code.toString()) {
+  otpRecord.attempts += 1;
+  await otpRecord.save({ transaction });
 
-    if (!isOtpValid) {
-      otpRecord.attempts += 1;
-      await otpRecord.save({ transaction });
+  await transaction.commit();
+  return res.status(400).json({
+    success: false,
+    message: "Invalid OTP. Please try again."
+  });
+}
 
-      await transaction.commit();
-      return res.status(400).json({
-        success: false,
-        message: "Invalid OTP. Please try again."
-      });
-    }
 
     // 6️⃣ Mark OTP verified
     otpRecord.verified_at = new Date();
-    otpRecord.attempts += 1;
-    await otpRecord.save({ transaction });
+     await otpRecord.save({ transaction });
+
+
+     
+// 🔍 Decide search field
+let whereCondition;
+
+if (/^[6-9]\d{9}$/.test(identifier)) {
+  // Phone login
+  whereCondition = { phone: identifier };
+} else if (/^[a-zA-Z0-9._%+-]+@(gmail|yahoo|outlook)\.com$/.test(identifier)) {
+  // Email login
+  whereCondition = { email: identifier.toLowerCase() };
+} else {
+  return res.status(400).json({
+    success: false,
+    message: "Enter a valid 10-digit phone number or email"
+  });
+}
+
+
+
 
     // 7️⃣ Verify user (phone OR email)
     const user = await User.findOne({
       where: {
-        [sequelize.Op.or]: [
-          { phone: identifier },
-          { email: identifier }
-        ]
+        whereCondition
       },
       transaction
     });

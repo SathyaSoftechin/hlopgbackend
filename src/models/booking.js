@@ -2,7 +2,7 @@ export default (sequelize, DataTypes) => {
   const Booking = sequelize.define(
     "Booking",
     {
-      booking_id: {
+      id: {
         type: DataTypes.INTEGER,
         autoIncrement: true,
         primaryKey: true,

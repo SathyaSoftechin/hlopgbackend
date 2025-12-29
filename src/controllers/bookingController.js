@@ -15,8 +15,8 @@ export const newBooking = async (req, res) => {
       totalAmount,
       deposit,
     } = req.body;
-    
-const userId = req.user.user_id;
+
+    const userId = req.user.user_id;
 
  
         if(!userId){
@@ -27,7 +27,7 @@ const userId = req.user.user_id;
         }
 
 
-    if ( !hostelId || !sharing || !totalAmount || !numDays || date || rentAmount || priceType) {
+    if ( !hostelId || !sharing || !totalAmount || !numDays || !date || !rentAmount || !priceType) {
       return res
         .status(400)
         .json({ success: false, message: "Missing required fields" });

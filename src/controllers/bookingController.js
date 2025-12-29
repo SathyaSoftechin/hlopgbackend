@@ -6,7 +6,6 @@ import { Booking, Hostel, User } from "../models/index.js";
 export const newBooking = async (req, res) => {
   try {
     const {
-      userId,
       hostelId,
       sharing,
       priceType,
@@ -17,7 +16,10 @@ export const newBooking = async (req, res) => {
       deposit,
     } = req.body;
 
-    if (!userId || !hostelId || !sharing || !totalAmount) {
+        const userId = req.user.id; // 👈 from JWT
+
+
+    if (!userId || !hostelId || !sharing || !totalAmount || !numDays || date || rentAmount || priceType) {
       return res
         .status(400)
         .json({ success: false, message: "Missing required fields" });

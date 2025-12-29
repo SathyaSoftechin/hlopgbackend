@@ -50,7 +50,7 @@ export const newBooking = async (req, res) => {
     });
 
         // ✅ Send response to frontend
-    res.status(201).json({ success: true, booking });
+    res.status(201).json({ success: true, bookingId });
 
 
   } catch (err) {

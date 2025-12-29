@@ -48,12 +48,14 @@ export const newBooking = async (req, res) => {
       totalAmount,
       status: "pending_payment",
     });
-
-    res.json({
+    
+ // ✅ IMPORTANT: RETURN response
+    return res.status(201).json({
       success: true,
-      message: "Booking created successfully (pending payment)",
-      bookingId,
+      message: "Booking created successfully",
+      booking
     });
+
   } catch (err) {
     console.error("Booking creation error:", err);
     res.status(500).json({ success: false, message: "Server error" });

@@ -15,9 +15,10 @@ export const newBooking = async (req, res) => {
       totalAmount,
       deposit,
     } = req.body;
+    
+const userId = req.user.user_id;
 
-        const userId = req.user.id; // 👈 from JWT
-
+ 
         if(!userId){
           return res
         .status(400)

@@ -18,6 +18,13 @@ export const newBooking = async (req, res) => {
 
         const userId = req.user.id; // 👈 from JWT
 
+        if(!userId){
+          return res
+        .status(400)
+        .json({ success: false, message: "Missing required fields" });
+    
+        }
+
 
     if ( !hostelId || !sharing || !totalAmount || !numDays || date || rentAmount || priceType) {
       return res

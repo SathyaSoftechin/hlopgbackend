@@ -31,6 +31,78 @@ export const newBooking = async (req, res) => {
       return res
         .status(400)
         .json({ success: false, message: "Missing required fields" });
+
+        
+    }
+
+
+    // ============================
+    // 🔹 hostelId → integer only
+    // ============================
+    if (!Number.isInteger(Number(hostelId))) {
+      return res.status(400).json({
+        success: false,
+        message: "hostelId must be a valid integer",
+      });
+    }
+
+    // ============================
+    // 🔹 numDays → integer & > 0
+    // ============================
+    if (!Number.isInteger(Number(numDays)) || Number(numDays) <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: "numDays must be a positive integer",
+      });
+    }
+
+    // ============================
+    // 🔹 priceType → daily | monthly
+    // ============================
+    const allowedPriceTypes = ["daily", "monthly"];
+    if (!allowedPriceTypes.includes(priceType)) {
+      return res.status(400).json({
+        success: false,
+        message: "priceType must be either 'daily' or 'monthly'",
+      });
+    }
+
+    // ============================
+    // 🔹 rentAmount & totalAmount → > 0
+    // ============================
+    if (isNaN(rentAmount) || Number(rentAmount) <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: "rentAmount must be a positive number",
+      });
+    }
+
+    if (isNaN(totalAmount) || Number(totalAmount) <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: "totalAmount must be a positive number",
+      });
+    }
+
+    // ============================
+    // 🔹 date → future date only
+    // ============================
+    const bookingDate = new Date(date);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    if (isNaN(bookingDate.getTime())) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid date format",
+      });
+    }
+
+    if (bookingDate < today) {
+      return res.status(400).json({
+        success: false,
+        message: "Booking date must be a future date",
+      });
     }
 
     const bookingId = `BOOK_${Date.now()}`;

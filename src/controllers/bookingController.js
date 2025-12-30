@@ -105,13 +105,39 @@ export const newBooking = async (req, res) => {
       });
     }
 
+
+
+    const allowedSharingValues = [
+  "single",
+  "double",
+  "three",
+  "four",
+  "five",
+  "six",
+  "seven",
+  "eight",
+  "nine",
+  "ten",
+];
+
+const normalizedSharing = String(sharing).toLowerCase().trim();
+
+if (!allowedSharingValues.includes(normalizedSharing)) {
+  return res.status(400).json({
+    success: false,
+    message:
+      "sharing must be one of: single, double, three, four, five, six, seven, eight, nine, ten",
+  });
+}
+
+
     const bookingId = `BOOK_${Date.now()}`;
 
     const booking = await Booking.create({
       bookingId,
       user_id: userId,
       hostel_id: hostelId,
-      sharing,
+      sharing:normalizedSharing,
       priceType,
       numDays,
       date,

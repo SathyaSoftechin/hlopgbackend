@@ -1,5 +1,5 @@
 import express from "express";
-import { registerUser, loginUser, updateBasicInfo, registerOwner, loginOwner,  verifyOtp, resendOTP ,verifyOwner,  verifyUser, getUserById, getOwnerById} from "../controllers/authController.js";
+import { registerUser, loginUser, updateBasicInfo, changePassword, registerOwner, loginOwner,  verifyOtp, resendOTP ,verifyOwner,  verifyUser, getUserById, getOwnerById} from "../controllers/authController.js";
 import { authenticateUserToken, verifyOwnerToken } from "../middleware/authMiddleware.js";
 
 
@@ -15,6 +15,8 @@ router.post("/resend-otp", resendOTP);
 router.get("/user", verifyUser);
 router.get("/owner", verifyOwner);
 router.put("/update-basic-info", authenticateUserToken, updateBasicInfo);
+router.put("/change-password", authenticateUserToken, changePassword);
+
 
 router.get("/userid", authenticateUserToken, getUserById); // ✅ logged-in user
 router.get("/ownerid", verifyOwnerToken, getOwnerById); // ✅ logged-in user

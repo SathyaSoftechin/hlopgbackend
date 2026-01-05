@@ -97,20 +97,23 @@ if(!ownerId){
   return res.status(401).json({ error: "Unauthrozed invalid Token" });
 }
 
-
-   const priceList = Object.values(sharingObj).filter(
-  (v) => !isNaN(v) && Number(v) > 0
-);
-
-if (!priceList.length) {
-  return res.status(400).json({
-    error: "At least one sharing type with valid price is required",
-  });
+let sharingObj = {};
+if (req.body.sharing) {
+    try {
+        sharingObj = JSON.parse(req.body.sharing);
+    } catch (err) {
+        return res.status(400).json({ error: "Invalid sharing format" });
+    }
 }
 
-const minPrice = Math.min(...priceList);
+  let minPrice = 0;
+if (sharingObj && Object.keys(sharingObj).length > 0) {
+    const priceList = Object.values(sharingObj);
+    minPrice = Math.min(...priceList);
+}
 
-    if (!pgName || !pgInfo || !pgType || !address || !city || !area || !sharing) {
+
+    if (!pgName || !pgInfo || !pgType || !address || !city || !area ) {
       return res.status(400).json({ error: "Please fill all required fields" });
     }
 

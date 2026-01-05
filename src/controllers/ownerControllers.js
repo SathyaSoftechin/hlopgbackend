@@ -7,7 +7,7 @@ import { Op } from "sequelize";
 
 export const getPgs = async (req, res) => {
   try {
-    const ownerId = req.owner.user_id; // this comes from verifyOwnerToken middleware
+    const ownerId = req.owner.owner_id; // this comes from verifyOwnerToken middleware
     if (!ownerId) return res.status(401).json({ error: "Unauthorized" });
     console.log("owner is", ownerId);
 

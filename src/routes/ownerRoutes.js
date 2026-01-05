@@ -5,7 +5,7 @@ import {verifyOwnerToken} from "../middleware/authMiddleware.js"
 
 const router = express.Router();
  
-router.get("/owner/pgs", verifyOwnerToken, getPgs);
+router.get("/pgs", verifyOwnerToken, getPgs);
 
 
 

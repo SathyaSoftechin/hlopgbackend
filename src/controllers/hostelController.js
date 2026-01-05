@@ -98,14 +98,19 @@ if(!ownerId){
 }
 
 
-     // ✔️ Find minimum price from sharing JSON
-    let minPrice = 0;
-    if (sharing && typeof sharing === "object") {
-      const priceList = Object.values(sharing);
-      minPrice = Math.min(...priceList);
-    }
+   const priceList = Object.values(sharingObj).filter(
+  (v) => !isNaN(v) && Number(v) > 0
+);
 
-    if (!pgName || !pgInfo || !pgType || !address || !city || !area || sharing) {
+if (!priceList.length) {
+  return res.status(400).json({
+    error: "At least one sharing type with valid price is required",
+  });
+}
+
+const minPrice = Math.min(...priceList);
+
+    if (!pgName || !pgInfo || !pgType || !address || !city || !area || !sharing) {
       return res.status(400).json({ error: "Please fill all required fields" });
     }
 

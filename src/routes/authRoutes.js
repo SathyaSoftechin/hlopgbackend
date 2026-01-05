@@ -1,6 +1,6 @@
 import express from "express";
-import { registerUser, loginUser, registerOwner, loginOwner,  verifyOtp, resendOTP ,verifyOwner,  verifyUser, getUserById, getOwnerById} from "../controllers/authController.js";
-import { authenticateUserToken, updateBasicInfo, verifyOwnerToken } from "../middleware/authMiddleware.js";
+import { registerUser, loginUser, updateBasicInfo, registerOwner, loginOwner,  verifyOtp, resendOTP ,verifyOwner,  verifyUser, getUserById, getOwnerById} from "../controllers/authController.js";
+import { authenticateUserToken, verifyOwnerToken } from "../middleware/authMiddleware.js";
 
 
 const router = express.Router();

@@ -645,4 +645,41 @@ export const apploginUser = async (req, res) => {
     return res.status(500).json({ error: "Server error" });
   }
 };
+
+
+export const updateBasicInfo = async (req, res) => {
+  try {
+    const userId = req.user.user_id;
+    const { name, gender } = req.body;
+
+    if (!name || !gender) {
+      return res.status(400).json({
+        success: false,
+        message: "Name and gender are required",
+      });
+    }
+
+    await User.update(
+      { name, gender },
+      { where: { id: userId } }
+    );
+
+    const updatedUser = await User.findByPk(userId, {
+      attributes: ["id", "name", "email", "phone", "gender"],
+    });
+
+    res.json({
+      success: true,
+      message: "Profile updated successfully",
+      user: updatedUser,
+    });
+  } catch (error) {
+    console.error("Update basic info error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+};
  
+

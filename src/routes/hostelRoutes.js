@@ -3,7 +3,7 @@ import multer from "multer";
 import { verifyOwnerToken, authenticateUserToken } from "../middleware/authMiddleware.js";
 
 
-import {  getHostels, hydHostels, cheHostels, benHostels, getHostelById, addHostel, updateHostel, toggleLikeHostel, getLikedHostels   } from "../controllers/hostelController.js";
+import {  getHostels, hydHostels, cheHostels, benHostels, getHostelById, addHostel, updateHostel,   } from "../controllers/hostelController.js";
 
 const router = express.Router();
 const upload = multer();

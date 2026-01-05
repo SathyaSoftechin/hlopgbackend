@@ -191,16 +191,15 @@ export const confirmBooking = async (req, res) => {
     res.status(500).json({ error: "Payment verification failed" });
   }
 };
-
-// ✅ Get bookings for a specific user
 export const getUserBookings = async (req, res) => {
   try {
     const user_id = req.user.user_id;
 
     if (!user_id) {
-      return res
-        .status(400)
-        .json({ success: false, message: "User not identified" });
+      return res.status(400).json({
+        success: false,
+        message: "User not identified",
+      });
     }
 
     const bookings = await Booking.findAll({
@@ -218,7 +217,6 @@ export const getUserBookings = async (req, res) => {
     const plainBookings = bookings.map((b) => ({
       id: b.id,
       bookingId: b.bookingId,
-      userId: b.user_id,
       hostelId: b.hostel_id,
       sharing: b.sharing,
       priceType: b.priceType,
@@ -228,6 +226,8 @@ export const getUserBookings = async (req, res) => {
       deposit: b.deposit,
       totalAmount: b.totalAmount,
       status: b.status,
+
+      // Hostel details
       hostelName: b.hostel?.hostel_name,
       city: b.hostel?.city,
       area: b.hostel?.area,
@@ -236,12 +236,14 @@ export const getUserBookings = async (req, res) => {
 
     res.json({
       success: true,
-      message: "User bookings fetched successfully",
       bookings: plainBookings,
     });
   } catch (err) {
     console.error("Error fetching user bookings:", err);
-    res.status(500).json({ success: false, message: "Server error" });
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
   }
 };
 

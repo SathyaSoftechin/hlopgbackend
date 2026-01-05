@@ -5,7 +5,7 @@ import { authenticateUserToken } from "../middleware/authMiddleware.js";
 const router = express.Router();
 router.post("/newbooking", authenticateUserToken, newBooking);
 router.post("/confirm-booking", confirmBooking);
-router.get("/getUserBookings", authenticateUserToken, getUserBookings )
+router.get("/user-bookings", authenticateUserToken, getUserBookings )
 router.get("/pg/:hostelId", getBookingsByHostelId);
 
 

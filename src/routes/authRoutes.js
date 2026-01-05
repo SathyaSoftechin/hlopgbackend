@@ -1,6 +1,6 @@
 import express from "express";
-import { registerUser, loginUser, registerOwner, loginOwner, verifyOtp, resendOTP ,verifyOwner,  verifyUser, getUserById, getOwnerById} from "../controllers/authController.js";
-import { authenticateUserToken } from "../middleware/authMiddleware.js";
+import { registerUser, loginUser, registerOwner, loginOwner,  verifyOtp, resendOTP ,verifyOwner,  verifyUser, getUserById, getOwnerById} from "../controllers/authController.js";
+import { authenticateUserToken, verifyOwnerToken } from "../middleware/authMiddleware.js";
 
 
 const router = express.Router();
@@ -16,7 +16,7 @@ router.get("/user", verifyUser);
 router.get("/owner", verifyOwner);
 
 router.get("/userid", authenticateUserToken, getUserById); // ✅ logged-in user
-router.get("/ownerid", authenticateUserToken, getOwnerById); // ✅ logged-in user
+router.get("/ownerid", verifyOwnerToken, getOwnerById); // ✅ logged-in user
 
 
 

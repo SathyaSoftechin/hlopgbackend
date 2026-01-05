@@ -36,6 +36,7 @@ export const verifyOwnerToken = async (req, res, next) => {
     req.owner = {
       owner_id: decoded.user_id,
     };
+    req.owner = decoded; // attach decoded token info
 
     next();
   } catch (err) {

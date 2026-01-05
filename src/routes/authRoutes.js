@@ -14,7 +14,7 @@ router.post("/verify-otp", verifyOtp);
 router.post("/resend-otp", resendOTP);
 router.get("/user", verifyUser);
 router.get("/owner", verifyOwner);
-router.put("/update-basic-info", authMiddleware, updateBasicInfo);
+router.put("/update-basic-info", authenticateUserToken, updateBasicInfo);
 
 router.get("/userid", authenticateUserToken, getUserById); // ✅ logged-in user
 router.get("/ownerid", verifyOwnerToken, getOwnerById); // ✅ logged-in user

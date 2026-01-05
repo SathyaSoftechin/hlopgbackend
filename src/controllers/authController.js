@@ -661,12 +661,14 @@ export const updateBasicInfo = async (req, res) => {
 
     await User.update(
       { name, gender },
-      { where: { id: userId } }
+      { where: { user_id: userId } }
     );
 
-    const updatedUser = await User.findByPk(userId, {
-      attributes: ["id", "name", "email", "phone", "gender"],
-    });
+  const updatedUser = await User.findOne({
+  where: { user_id: userId },
+  attributes: ["user_id", "name", "email", "phone", "gender"],
+});
+
 
     res.json({
       success: true,

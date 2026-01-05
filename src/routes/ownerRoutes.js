@@ -1,10 +1,11 @@
 import express from "express";
 import {getPgs } from "../controllers/ownerControllers.js";
+import verifyOwnerToken from "../middleware/authMiddleware.js"
  
 
 const router = express.Router();
  
-router.get("/pgs/:ownerId", getPgs);
+router.get("/owner/pgs", verifyOwnerToken, getPgs);
 
 
 

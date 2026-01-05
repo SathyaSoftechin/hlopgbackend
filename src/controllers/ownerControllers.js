@@ -6,24 +6,21 @@ import { Op } from "sequelize";
 
 
 export const getPgs = async (req, res) => {
- 
-    try {
-    const { ownerId } = req.params;
+  try {
+    const ownerId = req.owner?.user_id;
+
+    if (!ownerId) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
 
     const hostels = await Hostel.findAll({
       where: { owner_id: ownerId },
-      attributes: ["hostel_id", "hostel_name"]    });
-
-    return res.status(200).json({
-      success: true,
-      data: hostels,
+      order: [["created_at", "DESC"]],
     });
+
+    return res.json({ success: true, data: hostels });
   } catch (err) {
-    console.error("Error fetching owner PGs:", err);
-    return res.status(500).json({
-      success: false,
-      message: "Server Error while fetching PGs",
-    });
+    console.error("Fetch owner PGs error:", err);
+    return res.status(500).json({ error: "Server error" });
   }
-
 };

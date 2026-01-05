@@ -37,6 +37,7 @@ export const verifyOwnerToken = async (req, res, next) => {
       owner_id: decoded.user_id,
     };
  
+    console.log(req.owner.owner_id)
     next();
   } catch (err) {
     console.error("Auth error:", err.message);

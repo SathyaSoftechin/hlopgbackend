@@ -1,0 +1,70 @@
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+
+# This workflow helps you trigger a SonarCloud analysis of your code and populates
+# GitHub Code Scanning alerts with the vulnerabilities found.
+# Free for open source project.
+
+name: SonarCloud analysis
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+permissions:
+  pull-requests: read # allows SonarCloud to decorate PRs with analysis results
+
+jobs:
+  Analysis:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 🔹 REQUIRED: checkout the repository
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # 🔹 REQUIRED: setup Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: npm
+
+      # 🔹 Install dependencies
+      - name: Install dependencies
+        run: npm ci
+
+      # 🔹 Run tests with coverage (Express controllers, routes, services)
+      - name: Run tests with coverage
+        run: npm test -- --coverage
+
+      # 🔹 SonarCloud analysis
+      - name: Analyze with SonarCloud
+        uses: SonarSource/sonarcloud-github-action@4006f663ecaf1f8093e8e4abb9227f6041f52216
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args:
+            # mandatory
+            -Dsonar.projectKey=SathyaSoftechin_hlopgbackend
+            -Dsonar.organization=sathyasoftechin
+
+            # Express / Node.js coverage
+            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
+
+            # Source & test folders (recommended for Express)
+            -Dsonar.sources=src
+            -Dsonar.tests=tests
+
+            # Exclusions (recommended for Express + Sequelize)
+            -Dsonar.exclusions=**/node_modules/**,**/migrations/**,**/seeders/**
+            -Dsonar.coverage.exclusions=**/*.test.js,**/config/**
+
+          projectBaseDir: .

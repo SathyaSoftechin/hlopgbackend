@@ -51,7 +51,7 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
-          args:
+          args:>
             # mandatory
             -Dsonar.projectKey=SathyaSoftechin_hlopgbackend
             -Dsonar.organization=sathyasoftechin

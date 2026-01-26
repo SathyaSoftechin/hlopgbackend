@@ -73,6 +73,10 @@ export default (sequelize, DataTypes) => {
       type: DataTypes.DATE, 
       defaultValue: DataTypes.NOW 
     },
+    images: {
+  type: DataTypes.JSONB,
+  allowNull: true,
+},
   }, {
     tableName: 'hostels',
     timestamps: false,

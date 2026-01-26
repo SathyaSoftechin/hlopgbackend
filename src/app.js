@@ -3,8 +3,7 @@ import cors from "cors";
 import authRoutes from "./routes/authRoutes.js"; 
 import hostelRoutes from "./routes/hostelRoutes.js";
 import foodMenu from "./routes/foodRoutes.js";
-import table from "./routes/tableRoutes.js";
-import reviewRoutes from "./routes/reviewRoutes.js";
+ import reviewRoutes from "./routes/reviewRoutes.js";
 import bookingRoutes from "./routes/bookingRoutes.js"
 import ownerRoutes from "./routes/ownerRoutes.js";
 import roomRoutes from "./routes/roomRoutes.js";
@@ -24,14 +23,15 @@ app.use("/api/hostel", hostelRoutes);
 
 app.use("/api/food_menu", foodMenu);
 
-app.use("/api/table", table);
-
+ 
 app.use("/api/reviews", reviewRoutes);
 
 app.use("/api/booking", bookingRoutes);
 
 app.use("/api/owner", ownerRoutes);
 app.use("/api/rooms", roomRoutes);
+
+app.use("/uploads", express.static("uploads"));
 
  
 app.get("/", (req, res) => {

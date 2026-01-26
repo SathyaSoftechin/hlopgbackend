@@ -13,6 +13,7 @@ import ReviewModel from "./review.js";
 import BookingModel from "./booking.js";
 import RoomModel from "./room.js";
 import LikedHostelModel from "./likedHostel.js"; 
+import HostelRoomModel from "./HostelRoom.js";
 
 
 
@@ -34,6 +35,9 @@ const sequelize = new Sequelize(process.env.DATABASE_URL, {
   }
 });
 
+console.log("DATABASE_URL:", process.env.DATABASE_URL);
+
+
 sequelize.authenticate()
   .then(() => console.log("✅ Connected to PostgreSQL Sequlize"))
   .catch(err => console.error("❌ Sequelize connection error:", err));
@@ -49,7 +53,7 @@ const Review = ReviewModel(sequelize, Sequelize.DataTypes);
 const Booking = BookingModel(sequelize, Sequelize.DataTypes);
 const Room = RoomModel(sequelize, Sequelize.DataTypes);
 const LikedHostel = LikedHostelModel(sequelize, Sequelize.DataTypes);  
-
+const HostelRoom = HostelRoomModel(sequelize, Sequelize.DataTypes);
 
 
 // ✅ Define relationships
@@ -107,6 +111,6 @@ LikedHostel.belongsTo(Hostel, {
 
 
 // ✅ Export everything
-export { sequelize, Sequelize, User, Owner, Hostel, FoodMenu, Otp, Visitor, Review, Booking, Room, LikedHostel };
-export default { sequelize, Sequelize, User, Owner, Hostel, FoodMenu, Otp, Visitor, Review, Booking, Room, LikedHostel };
+export { sequelize, Sequelize, User, Owner, Hostel, FoodMenu, Otp, Visitor, Review, Booking, Room, HostelRoom, LikedHostel };
+export default { sequelize, Sequelize, User, Owner, Hostel, FoodMenu, Otp, Visitor, Review, Booking, Room, HostelRoom, LikedHostel };
 

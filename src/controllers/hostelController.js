@@ -64,13 +64,125 @@
 
   
 
-   export const addHostel = async (req, res) => {
-  try {
+//    export const addHostel = async (req, res) => {
+//   try {
 
-        if (!req.body) return res.status(400).json({ error: "Request body missing" });
+//         if (!req.body) return res.status(400).json({ error: "Request body missing" });
+
+//     console.log("BODY:", req.body);
+
+
+
+//     const {
+//       pgName,
+//       pgInfo,
+//       pgType,
+//       address,
+//       area,
+//       city,
+//       state,
+//       pincode,
+//       rules,
+//        furnish,
+//       sharing,
+//       foodMenu
+//     } = req.body;
+
+       
+
+
+
+// const ownerId = req.owner.owner_id; // 🔐 FROM TOKEN
+// if(!ownerId){
+//   return res.status(401).json({ error: "Unauthrozed invalid Token" });
+// }
+
+// let sharingObj = {};
+// if (req.body.sharing) {
+//     try {
+//         sharingObj = JSON.parse(req.body.sharing);
+//     } catch (err) {
+//         return res.status(400).json({ error: "Invalid sharing format" });
+//     }
+// }
+
+//   let minPrice = 0;
+// if (sharingObj && Object.keys(sharingObj).length > 0) {
+//     const priceList = Object.values(sharingObj);
+//     minPrice = Math.min(...priceList);
+// }
+
+
+//     if (!pgName || !pgInfo || !pgType || !address || !city || !area ) {
+//       return res.status(400).json({ error: "Please fill all required fields" });
+//     }
+
+//     // ✅ FIRST: Create Hostel
+//     const newHostel = await Hostel.create({
+//       hostel_name: pgName,
+//       address,
+//       area,
+//       city,
+//       state,
+//       pincode,
+//       pg_type: pgType,
+//       owner_id: ownerId,
+//       amenities: JSON.parse(furnish || "{}"),
+//       sharing: JSON.parse(sharing || "{}"),
+//       popular: 1,
+//       rating: 0.0,
+//         price: minPrice ,
+//       rules: JSON.parse(rules || "[]")
+//     });
+
+//     // -------------------------------------------
+//     // ✅ SECOND: Insert Food Menu (IMPORTANT)
+//     // -------------------------------------------
+//     if (foodMenu) {
+//       const menu = JSON.parse(foodMenu);
+
+//       const breakfast = {};
+//       const lunch = {};
+//       const dinner = {};
+
+//       // Convert frontend format into DB format
+//       Object.keys(menu).forEach((day) => {
+//         breakfast[day] = menu[day].breakfast || "";
+//         lunch[day] = menu[day].lunch || "";
+//         dinner[day] = menu[day].dinner || "";
+//       });
+
+//       await FoodMenu.create({
+//         hostel_id: newHostel.hostel_id,
+//         breakfast,
+//         lunch,
+//         dinner,
+//       });
+//     }
+
+//     return res.json({
+//       success: true,
+//       message: "PG & Food Menu Created Successfully",
+//       hostel: newHostel
+//     });
+
+//   } catch (error) {
+//     console.error("Add PG error:", error);
+//     return res.status(500).json({ error: "Server error" });
+//   }
+// };
+
+
+
+export const addHostel = async (req, res) => {
+  try {
+    if (!req.body) {
+      return res.status(400).json({ error: "Request body missing" });
+    }
 
     console.log("BODY:", req.body);
-
+    console.log("FILES:", req.files); // 👈 DEBUG
+    console.log("FILES:", req.files);
 
 
     const {
@@ -83,41 +195,44 @@
       state,
       pincode,
       rules,
-       furnish,
+      furnish,
       sharing,
-      foodMenu
+      foodMenu,
     } = req.body;
 
-       
-
-
-
-const ownerId = req.owner.owner_id; // 🔐 FROM TOKEN
-if(!ownerId){
-  return res.status(401).json({ error: "Unauthrozed invalid Token" });
-}
-
-let sharingObj = {};
-if (req.body.sharing) {
-    try {
-        sharingObj = JSON.parse(req.body.sharing);
-    } catch (err) {
-        return res.status(400).json({ error: "Invalid sharing format" });
+    const ownerId = req.owner.owner_id;
+    if (!ownerId) {
+      return res.status(401).json({ error: "Unauthorized invalid token" });
     }
-}
 
-  let minPrice = 0;
-if (sharingObj && Object.keys(sharingObj).length > 0) {
-    const priceList = Object.values(sharingObj);
-    minPrice = Math.min(...priceList);
-}
+    // ---------------- Sharing ----------------
+    let sharingObj = {};
+    if (sharing) {
+      try {
+        sharingObj = JSON.parse(sharing);
+      } catch {
+        return res.status(400).json({ error: "Invalid sharing format" });
+      }
+    }
 
+    let minPrice = 0;
+    if (Object.keys(sharingObj).length > 0) {
+      minPrice = Math.min(...Object.values(sharingObj));
+    }
 
-    if (!pgName || !pgInfo || !pgType || !address || !city || !area ) {
+    if (!pgName || !pgInfo || !pgType || !address || !city || !area) {
       return res.status(400).json({ error: "Please fill all required fields" });
     }
 
-    // ✅ FIRST: Create Hostel
+    // ---------------- Images ----------------
+    let imageUrls = [];
+    if (req.files && req.files.length > 0) {
+      imageUrls = req.files.map(
+        (file) => `/uploads/hostels/${file.filename}`
+      );
+    }
+
+    // ---------------- Create Hostel ----------------
     const newHostel = await Hostel.create({
       hostel_name: pgName,
       address,
@@ -128,16 +243,15 @@ if (sharingObj && Object.keys(sharingObj).length > 0) {
       pg_type: pgType,
       owner_id: ownerId,
       amenities: JSON.parse(furnish || "{}"),
-      sharing: JSON.parse(sharing || "{}"),
+      sharing: sharingObj,
       popular: 1,
       rating: 0.0,
-        price: minPrice ,
-      rules: JSON.parse(rules || "[]")
+      price: minPrice,
+      rules: JSON.parse(rules || "[]"),
+      images: imageUrls, // ✅ NEW
     });
 
-    // -------------------------------------------
-    // ✅ SECOND: Insert Food Menu (IMPORTANT)
-    // -------------------------------------------
+    // ---------------- Food Menu ----------------
     if (foodMenu) {
       const menu = JSON.parse(foodMenu);
 
@@ -145,7 +259,6 @@ if (sharingObj && Object.keys(sharingObj).length > 0) {
       const lunch = {};
       const dinner = {};
 
-      // Convert frontend format into DB format
       Object.keys(menu).forEach((day) => {
         breakfast[day] = menu[day].breakfast || "";
         lunch[day] = menu[day].lunch || "";
@@ -162,15 +275,15 @@ if (sharingObj && Object.keys(sharingObj).length > 0) {
 
     return res.json({
       success: true,
-      message: "PG & Food Menu Created Successfully",
-      hostel: newHostel
+      message: "PG, Images & Food Menu Created Successfully",
+      hostel: newHostel,
     });
-
   } catch (error) {
     console.error("Add PG error:", error);
     return res.status(500).json({ error: "Server error" });
   }
 };
+
 
 
 // ✅ Update hostel/PG by ID

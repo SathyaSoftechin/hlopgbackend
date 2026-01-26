@@ -18,7 +18,7 @@ router.get("/benhostels", benHostels);
 // router.post("/like-hostel", likeHostel)
 router.post("/addhostel", verifyOwnerToken, upload.array("images", 10), addHostel);
 router.get("/:hostel_id", getHostelById);
-router.put("/:hostel_id", updateHostel);  // <-- PUT endpoint 
+router.put("/update/:hostel_id", verifyOwnerToken, upload.array("images", 10), updateHostel);  // <-- PUT endpoint 
  
 
 

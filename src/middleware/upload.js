@@ -2,7 +2,7 @@ import multer from "multer";
 import path from "path";
 import fs from "fs";
 
-const uploadDir = "uploads/hostels";
+const uploadDir = "/var/www/hlopg/uploads/hostels";
 
 // create folder if not exists
 if (!fs.existsSync(uploadDir)) {

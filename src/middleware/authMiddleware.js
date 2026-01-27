@@ -16,32 +16,25 @@ try {
 }
 };
 
-export const verifyOwnerToken = async (req, res, next) => {
+export const verifyOwnerToken = (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
-
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return res.status(401).json({ error: "Access denied. Token missing." });
+    if (!authHeader) {
+      return res.status(401).json({ error: "No token provided" });
     }
 
     const token = authHeader.split(" ")[1];
-
- 
-    // ✅ Verify token only
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    console.log(decoded); // 🔍 Check what's actually inside
 
+    if (decoded.user_type !== "owner") {
+      return res.status(403).json({ error: "Owners only" });
+    }
 
-    // ✅ Attach owner data from token
-    req.owner = {
-      owner_id: decoded.user_id,
-    };
- 
-    console.log(req.owner.owner_id)
+    // 🔥 THIS LINE IS REQUIRED
+    req.owner = { owner_id: decoded.user_id };
+
     next();
   } catch (err) {
-    console.error("Auth error:", err.message);
-    return res.status(401).json({ error: "Invalid or expired token" });
+    return res.status(401).json({ error: "Invalid token" });
   }
- 
 };

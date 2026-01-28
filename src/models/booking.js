@@ -16,16 +16,16 @@ export default (sequelize, DataTypes) => {
 
 
 
-      // Foreign keys
       user_id: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        references: {
-          model: "Users", // must match your users table name
-          key: "id",
-        },
-        onDelete: "CASCADE",
-      },
+  type: DataTypes.BIGINT,
+  allowNull: false,
+  references: {
+    model: "users",   // table name (lowercase)
+    key: "user_id",   // ✅ CORRECT KEY
+  },
+  onDelete: "CASCADE",
+},
+
       hostel_id: {
         type: DataTypes.INTEGER,
         allowNull: false,

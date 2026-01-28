@@ -72,6 +72,7 @@ Review.belongsTo(Hostel, { foreignKey: "hostel_id", as: "hostel" }); // Review â
 User.hasMany(Booking, { foreignKey: "user_id", as: "bookings" });
 Booking.belongsTo(User, { foreignKey: "user_id", as: "user" });
 
+
 Hostel.hasMany(Booking, { foreignKey: "hostel_id", as: "bookings" });
 Booking.belongsTo(Hostel, { foreignKey: "hostel_id", as: "hostel" });
 

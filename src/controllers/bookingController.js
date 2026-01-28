@@ -252,36 +252,46 @@ export const getBookingsByHostelId = async (req, res) => {
   try {
     const { hostelId } = req.params;
 
+    if (!hostelId) {
+      return res.status(400).json({
+        success: false,
+        members: [],
+        message: "Hostel ID required",
+      });
+    }
+
     const bookings = await Booking.findAll({
       where: { hostel_id: hostelId },
       include: [
         {
           model: User,
           as: "user",
-          attributes: ["user_id", "name", "phone"],
+          attributes: ["name", "phone"],
         },
       ],
-      order: [["id", "DESC"]],
+      order: [["createdAt", "DESC"]],
     });
 
     const members = bookings.map((b) => ({
       booking_id: b.bookingId,
-      name: b.user?.name || "Unknown",
-      phone: b.user?.phone || "",
+      name: b.user ? b.user.name : "Unknown",
+      phone: b.user ? b.user.phone : "",
       sharing: b.sharing,
-      priceType: b.priceType,
-      numDays: b.numDays,
       joiningDate: b.date,
       rentAmount: b.rentAmount,
-      deposit: b.deposit,
-      totalAmount: b.totalAmount,
       status: b.status,
-      vacateDate: null, // optional: calculate if needed
     }));
 
-    res.status(200).json({ success: true, members });
+    return res.status(200).json({
+      success: true,
+      members,
+    });
   } catch (error) {
-    console.error("Error fetching members:", error);
-    res.status(500).json({ success: false, message: "Server Error" });
+    console.error("❌ PG members error:", error);
+    return res.status(500).json({
+      success: false,
+      members: [],
+      message: "Server error",
+    });
   }
 };

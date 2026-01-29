@@ -8,29 +8,27 @@ export default (sequelize, DataTypes) => {
         primaryKey: true,
       },
 
-   bookingId: {
+      bookingId: {
         type: DataTypes.STRING,
         allowNull: false,
         unique: true,
       },
 
-
-
       user_id: {
-  type: DataTypes.BIGINT,
-  allowNull: false,
-  references: {
-    model: "users",   // table name (lowercase)
-    key: "user_id",   // ✅ CORRECT KEY
-  },
-  onDelete: "CASCADE",
-},
+        type: DataTypes.BIGINT,
+        allowNull: false,
+        references: {
+          model: "users",
+          key: "user_id",
+        },
+        onDelete: "CASCADE",
+      },
 
       hostel_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
-          model: "Hostels", // must match your hostels table name
+          model: "Hostels",
           key: "id",
         },
         onDelete: "CASCADE",
@@ -42,7 +40,7 @@ export default (sequelize, DataTypes) => {
       },
 
       priceType: {
-        type: DataTypes.STRING, // "daily" or "monthly"
+        type: DataTypes.STRING,
         allowNull: false,
       },
 
@@ -52,6 +50,12 @@ export default (sequelize, DataTypes) => {
       },
 
       date: {
+        type: DataTypes.DATEONLY, // joining date
+        allowNull: false,
+      },
+
+      // ✅ Stored in DB
+      vacateDate: {
         type: DataTypes.DATEONLY,
         allowNull: false,
       },
@@ -75,11 +79,26 @@ export default (sequelize, DataTypes) => {
         type: DataTypes.ENUM("pending_payment", "confirmed", "cancelled"),
         defaultValue: "pending_payment",
       },
- 
     },
     {
       tableName: "bookings",
       timestamps: true,
+
+      hooks: {
+        beforeCreate: (booking) => {
+          const joinDate = new Date(booking.date);
+          joinDate.setDate(joinDate.getDate() + booking.numDays);
+          booking.vacateDate = joinDate;
+        },
+
+        beforeUpdate: (booking) => {
+          if (booking.changed("date") || booking.changed("numDays")) {
+            const joinDate = new Date(booking.date);
+            joinDate.setDate(joinDate.getDate() + booking.numDays);
+            booking.vacateDate = joinDate;
+          }
+        },
+      },
     }
   );
 

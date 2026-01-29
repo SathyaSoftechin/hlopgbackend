@@ -110,7 +110,7 @@ export const newBooking = async (req, res) => {
     const allowedSharingValues = [
   "single",
   "double",
-  "three",
+  "triple",
   "four",
   "five",
   "six",
@@ -278,6 +278,8 @@ export const getBookingsByHostelId = async (req, res) => {
       phone: b.user ? b.user.phone : "",
       sharing: b.sharing,
       joiningDate: b.date,
+       vacateDate: b.vacateDate,  
+
       rentAmount: b.rentAmount,
       status: b.status,
     }));

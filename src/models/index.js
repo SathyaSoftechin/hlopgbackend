@@ -14,6 +14,9 @@ import BookingModel from "./booking.js";
 import RoomModel from "./room.js";
 import LikedHostelModel from "./likedHostel.js"; 
 import HostelRoomModel from "./HostelRoom.js";
+import PgUpdateModel from "./pgUpdate.js";
+import NotificationModel from "./notification.js";
+
 
 
 
@@ -54,6 +57,9 @@ const Booking = BookingModel(sequelize, Sequelize.DataTypes);
 const Room = RoomModel(sequelize, Sequelize.DataTypes);
 const LikedHostel = LikedHostelModel(sequelize, Sequelize.DataTypes);  
 const HostelRoom = HostelRoomModel(sequelize, Sequelize.DataTypes);
+
+const PgUpdate = PgUpdateModel(sequelize, Sequelize.DataTypes);
+const Notification = NotificationModel(sequelize, Sequelize.DataTypes);
 
 
 // ✅ Define relationships
@@ -110,8 +116,90 @@ LikedHostel.belongsTo(Hostel, {
 });
 
 
+// =====================
+// 🏠 PG Updates
+// =====================
+Hostel.hasMany(PgUpdate, {
+  foreignKey: "hostel_id",
+  as: "updates",
+  onDelete: "CASCADE",
+});
 
-// ✅ Export everything
-export { sequelize, Sequelize, User, Owner, Hostel, FoodMenu, Otp, Visitor, Review, Booking, Room, HostelRoom, LikedHostel };
-export default { sequelize, Sequelize, User, Owner, Hostel, FoodMenu, Otp, Visitor, Review, Booking, Room, HostelRoom, LikedHostel };
+PgUpdate.belongsTo(Hostel, {
+  foreignKey: "hostel_id",
+  as: "hostel",
+});
 
+Owner.hasMany(PgUpdate, {
+  foreignKey: "owner_id",
+  as: "pgUpdates",
+  onDelete: "CASCADE",
+});
+
+PgUpdate.belongsTo(Owner, {
+  foreignKey: "owner_id",
+  as: "owner",
+});
+ 
+
+
+// =====================
+// 🔔 Notifications
+// =====================
+User.hasMany(Notification, {
+  foreignKey: "user_id",
+  as: "notifications",
+  onDelete: "CASCADE",
+});
+
+Notification.belongsTo(User, {
+  foreignKey: "user_id",
+  as: "user",
+});
+
+Hostel.hasMany(Notification, {
+  foreignKey: "hostel_id",
+  as: "notifications",
+  onDelete: "CASCADE",
+});
+
+Notification.belongsTo(Hostel, {
+  foreignKey: "hostel_id",
+  as: "hostel",
+});
+
+export {
+  sequelize,
+  Sequelize,
+  User,
+  Owner,
+  Hostel,
+  FoodMenu,
+  Otp,
+  Visitor,
+  Review,
+  Booking,
+  Room,
+  HostelRoom,
+  LikedHostel,
+  PgUpdate,
+  Notification
+};
+
+export default {
+  sequelize,
+  Sequelize,
+  User,
+  Owner,
+  Hostel,
+  FoodMenu,
+  Otp,
+  Visitor,
+  Review,
+  Booking,
+  Room,
+  HostelRoom,
+  LikedHostel,
+  PgUpdate,
+  Notification
+};
